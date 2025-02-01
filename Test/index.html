@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Tracking</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection"></script>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        video { max-width: 100%; height: auto; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        #videoInput { display: none; }
+        .upload-btn { padding: 10px 20px; background-color: #007BFF; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        .upload-btn:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <label for="videoInput" class="upload-btn">Upload Video</label>
+    <input type="file" id="videoInput" accept="video/*">
+    <video id="video" controls></video>
+    <canvas id="canvas"></canvas>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const videoInput = document.getElementById('videoInput');
+
+        videoInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                video.src = url;
+                video.controls = true;
+
+                // Key Change: Event listener for 'loadedmetadata'
+                video.addEventListener('loadedmetadata', () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    video.play().catch(error => {
+                        console.error('Error playing video:', error);
+                    });
+                });
+
+
+            }
+        });
+
+        async function loadModel() {
+            return await faceDetection.createDetector(faceDetection.SupportedModels.MediaPipeFaceDetector, {
+                runtime: 'tfjs'
+            });
+        }
+
+        async function detectFaces(detector) {
+            if (video.readyState >= 2) { // Ensure video is ready
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const faces = await detector.estimateFaces(video);
+                if (faces) { // Check if faces were detected
+                    faces.forEach(face => {
+                        const { xMin, yMin, width, height } = face.box;
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(xMin, yMin, width, height);
+                    });
+                }
+
+            }
+            requestAnimationFrame(() => detectFaces(detector));
+        }
+
+        async function run() {
+            const detector = await loadModel();
+            // Key Change:  No longer listening for 'play', start detection after metadata is loaded.
+            video.addEventListener('loadedmetadata', () => detectFaces(detector));
+        }
+
+        run();
+    </script>
+</body>
+</html>
