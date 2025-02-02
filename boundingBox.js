@@ -8,7 +8,7 @@ canvas.style.pointerEvents = "none";
 
 let boundingBoxes = {};
 
-fetch("result.json")
+fetch("result2.json")
   .then((response) => response.json())
   .then((data) => {
     boundingBoxes = data.bounding_boxes;
@@ -35,39 +35,39 @@ function drawRectangles() {
   const currentTime = video.currentTime;
   const currentFrame = Math.floor(currentTime * frameRate);
 
-  const clampedFrame = Math.min(Math.max(currentFrame, 0), 299);
+  console.log(`Time: ${currentTime.toFixed(2)}s | Frame: ${currentFrame}`);
 
-  console.log(`Time: ${currentTime.toFixed(2)}s | Frame: ${clampedFrame}`);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-   const frameData = boundingBoxes["0"].bounding_box[currentFrame.toString()];
-   if (frameData) {
-     ctx.clearRect(0, 0, canvas.width, canvas.height);
+  Object.keys(boundingBoxes).forEach((key) => {
+    const frameData = boundingBoxes[key].bounding_box[currentFrame.toString()];
+    if (frameData) {
+       const boxClass = boundingBoxes[key].class;
+       const strokeColor =
+         boxClass === "fake" ? "rgba(255, 0, 0, 0.6)" : "rgba(59, 255, 5, 0.6)";
+      if (Array.isArray(frameData) && frameData.length === 4) {
+        let [x1, y1, x2, y2] = frameData;
+        x1 *= 2
+        y1 *= 2
+        x2 *= 2
+        y2 *= 2
+        const width = x2 - x1;
+        const height = y2 - y1;
 
-     if (Array.isArray(frameData) && frameData.length === 4) {
-       let [x1, y1, x2, y2] = frameData;
-        x1 *= 2;
-        y1 *= 2;
-        x2 *= 2;
-        y2 *= 2;
-       const width = x2 - x1;
-       const height = y2 - y1;
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x1, y1, width, height);
 
-       ctx.strokeStyle = "rgba(59, 255, 5, 0.6)";
-       ctx.lineWidth = 2;
-       ctx.strokeRect(x1, y1, width, height);
-
-       console.log(
-         `Frame ${currentFrame}, Bounding Box: [${x1}, ${y1}, ${x2}, ${y2}]`
-       );
-     } else {
-       console.error(
-         `Invalid bounding box data for frame: ${currentFrame}, bbox: ${frameData}`
-       );
-     }
-   } else {
-     ctx.clearRect(0, 0, canvas.width, canvas.height);
-     console.log(`No bounding box data found for frame: ${currentFrame}`);
-   }
+        console.log(
+          `Frame ${currentFrame}, Bounding Box: [${x1}, ${y1}, ${x2}, ${y2}]`
+        );
+      } else {
+        console.error(
+          `Invalid bounding box data for frame: ${currentFrame}, bbox: ${frameData}`
+        );
+      }
+    }
+  });
 }
 
 function updateCanvas() {
