@@ -17,16 +17,20 @@ fetch("result2.json")
   .catch((error) => console.error("Error loading result.json:", error));
 
 function syncCanvas() {
+  const videoRect = video.getBoundingClientRect();
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
-  canvas.style.width = video.videoWidth + "px";
-  canvas.style.height = video.videoHeight + "px";
+ canvas.style.width = videoRect.width + "px";
+ canvas.style.height = videoRect.height + "px";
   canvas.style.top = video.offsetTop + "px";
   canvas.style.left = video.offsetLeft + "px";
 }
 
 syncCanvas();
-video.addEventListener("resize", syncCanvas);
+console.log("Canvas synced with video:", canvas.width, canvas.height);
+console.log("Video:", video.videoWidth, video.videoHeight);
+window.addEventListener("resize", syncCanvas);
+video.addEventListener("loadeddata", syncCanvas);
 
 function drawRectangles() {
   if (!boundingBoxes) return;

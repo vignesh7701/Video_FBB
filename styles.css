@@ -14,6 +14,22 @@ body{
     align-items: center;
 }
 
-.videoContainer{
-    position: relative;
+body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+    font-family: 'Roboto', sans-serif;
+    margin: auto;
 }
+
+.container {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.videoContainer {
+    position: relative; 
+    width: 30%;
+    height: auto;
+} 
